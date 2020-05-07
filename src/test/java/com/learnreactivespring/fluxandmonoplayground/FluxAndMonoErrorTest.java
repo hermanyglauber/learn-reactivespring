@@ -3,7 +3,9 @@ package com.learnreactivespring.fluxandmonoplayground;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import sun.security.x509.OtherName;
 
 public class FluxAndMonoErrorTest {
 
@@ -93,6 +95,22 @@ public class FluxAndMonoErrorTest {
                 .expectNext("A","B","C")
                 .expectNext("A","B","C")
                 .expectError(IllegalStateException.class)
+                .verify();
+
+    }
+
+    @Test
+    public void monoErrorHandling_onErrorMap_withThen(){
+
+        Mono<String> monoString = Mono.just("A").log()
+                .then(Mono.error(new RuntimeException("Runtime Exception Occurred")))
+                .then(Mono.just("B").log())
+                .onErrorMap((e) ->
+                        new CustomException(e)
+                );
+
+        StepVerifier.create(monoString.log())
+                .expectError(CustomException.class)
                 .verify();
 
     }
